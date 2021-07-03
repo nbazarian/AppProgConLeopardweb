@@ -1,3 +1,4 @@
+//user class developed by Nuno Bazarian
 #ifndef USER_H
 #define USER_H
 
