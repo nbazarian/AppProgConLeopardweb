@@ -17,14 +17,14 @@ static int callback(void* data, int argc, char** argv, char** azColName)
 
                 return 0;
 }
-
+//header of file developed by Nuno Bazarian. Variable names can be blamed on me (Nuno)
 int main(void){
 sqlite3* DB;
 int selection,rfc; 
 string input, hold;  
 char logout;
 char* messageError; 
-rfc = sqlite3_open("assignment5.db",&DB);
+rfc = sqlite3_open("assignment5.db",&DB); //open Assignment5.db (database file)
 
 
   //ADD Columns to Student and Instructor - Keeps track of the courses that they are taking/teaching 
@@ -101,7 +101,7 @@ rfc = sqlite3_open("assignment5.db",&DB);
 	}
 
 /*
-//admin functions
+//admin functions (Nuno Bazarian)
 do{
 admin_c dummy("Dummy", "Info", "Woooo"); //occupy variable with login information
 cout << "1.Search all courses\n2.Search with parameters\n3.Add/Remove course\nEnter choice:"; //prompt user with interface
