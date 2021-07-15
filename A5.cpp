@@ -156,66 +156,73 @@ cin >> selection;  //take user input
   rfc = sqlite3_exec(DB, assembleRoster.c_str(), callback, NULL, NULL);
   
   int choice = 0;
-  cout << "Select an option:\n\n1. Assemble roster\n2. Print roster\n\nSelect: ";
+  cout << "Select an option:\n\n1. Assemble roster\n2. Print roster\n3. Remove from roster\n4. Search courses by parameters\n\nSelect: ";
   cin >> choice;
+  
+  std::string crnIn = "", yearIn = "", deptIn = "", instructorIn = "", query = "";
   
   switch(choice)
   {
     case 1:
-      instructor.addToRoster(DB);
-      break;
+        instructor.addToRoster(DB);
+        break;
       
     case 2:
-      instructor.printRoster(DB);
-      break;
+        instructor.printRoster(DB);
+        break;
+
+    case 3:
+        instructor.removeFromRoster(DB);
+        break;
+        
+    case 4:
+      
+        cout << "Enter year of course: ";
+        cin >> yearIn;
+
+        query = "SELECT * FROM COURSE WHERE YEAR = " + yearIn;
+
+        cout << "Which parameters do you want to search by?\n\n1. Instructor\n2. Department\n\nMake a selection: ";
+        cin >> choice;
+
+        switch (choice)
+        {
+        case 1:
+
+            cout << "Enter the instructor of the course: ";
+            cin >> instructorIn;
+
+            query = query + " AND INSTRUCTOR = '" + crnIn + "'";
+
+            break;
+
+        case 2:
+            cout << "Enter the department of the course: ";
+            cin >> deptIn;
+
+            query = query + " AND DEPARTMENT = '" + deptIn + "'";
+
+            break;
+
+        default:
+
+            cout << "Invalid selection.";
+
+            break;
+
+        }
+
+        rfc = sqlite3_exec(DB, query.c_str(), callback, NULL, NULL);
+
+        break;
       
     default:
-      break;
-  }
-  
-  // Search courses by parameters, Brendan Gibbons
-  std::string crnIn = "", yearIn = "";
-  std::string deptIn = "", instructorIn = "";
-  cout << "Enter CRN and year of course separated by a space: ";
-  cin >> crnIn >> yearIn;
-  
-  string query = "SELECT * FROM COURSE WHERE YEAR = " + yearIn + " AND CRN = " + crnIn;
-  
-  cout << "Which parameters do you want to search by?\n\n1. Instructor\n2. Department\n\nMake a selection: ";
-  cin >> choice;
-  
-  switch(choice)
-  {
-    case 1:
-    
-      cout << "Enter the instructor of the course: ";
-      cin >> instructorIn;
-      
-      query = query + " AND INSTRUCTOR = '" + crnIn + "'";
-    
-      break;
-    
-    case 2:
-      cout << "Enter the department of the course: ";
-      cin >> deptIn;
-      
-      query = query + " AND DEPARTMENT = '" + deptIn + "'";
-    
-      break;
-    
-    default:
-      
-      cout << "Invalid selection.";
-    
-      break;
-      
-  }
-   
-   cout << endl << query << endl;
-   rfc = sqlite3_exec(DB, query.c_str(), callback, NULL, NULL);
-  
-                 
 
+        cout << "Invalid input.\n\n";
 
+     break;
+  }
+
+  
 sqlite3_close(DB);
 }
