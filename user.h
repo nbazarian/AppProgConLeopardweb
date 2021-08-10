@@ -1,4 +1,3 @@
-//user class developed by Nuno Bazarian
 #ifndef USER_H
 #define USER_H
 
@@ -7,6 +6,7 @@
 #include <list>
 #include <stdio.h>
 #include <sqlite3.h>
+#include <vector>
 
 using namespace std;
 class user_c{
@@ -14,7 +14,7 @@ class user_c{
         std::string  firstName, lastName, ID; //ID is string for implementation in institutions that user letters for identification
     public: 
 char* messageError;
-int rfc = 0; 
+int rfc; 
 /*************************************************************************************************
  The callback() function is invoked for each result row coming out of the evaluated SQL statement
  1st argument - the 4th argument provided by sqlite3_exec() and is typically not used
@@ -35,7 +35,6 @@ static int callback(void* data, int argc, char** argv, char** azColName)
 
                 return 0;
 }
-
 
         void setFirst(std::string fName){ firstName = fName;} //set first name of user
         void setLast(std::string lName){ lastName = lName;} //set last name of user

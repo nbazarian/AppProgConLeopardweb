@@ -1,232 +1,189 @@
 #include <sqlite3.h>
 #include "admin.h"
 #include "student.h"
-#include "instructor.h"
-
+#include <vector>
 using namespace std;
+using std::vector;
+ 
+int main(void){
+  sqlite3* DB;
+  int selection,rfc; 
+  //string exit;
+  int exit = 0;;
+  string input, hold;  
+  char logout;
+  char* messageError; 
+  rfc = sqlite3_open("assignment5.db",&DB);
 
-static int callback(void* data, int argc, char** argv, char** azColName)
-{
-	int i;
+ 
+ 
+  // *************************************************************************************
+  // ********************************LOG IN LOG OUT **************************************
+  // *************************************************************************************
+  //           STILL NEEDS TO BE COMPLETED 
+  
 
-	for (i = 0; i < argc; i++)
-	{
-		printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+   string userID, userType, userEmail, storedID, storedEmail;
+   int type;
+   cout << "\n***** LOG IN TO BEGIN *****\n\n";
+
+     
+     
+   //Loop until user enters correct credentials 
+   int validLogin = 0, invalidCount = 1;
+   while (validLogin == 0){
+     cout << "Enter your ID: ";
+     cin >> userID;
+     cout << "Enter your Email: ";
+     cin >> userEmail;
+
+
+     //CHECK what type of user 
+     
+     if (userID[0] == '1'){
+       userType = "STUDENT";
+       type = 1;
+     }
+     else if (userID[0] == '2'){
+       userType = "INSTRUCTOR"; 
+       type = 2;
+     } 
+     else if (userID[0] == '3'){
+       userType = "ADMIN";
+       type = 3;
+     }
+     else 
+       cout << "\nERROR: INVALID ID\n";
+  
+    //*******
+    // Store return value of query that selects ID, and Email of user 
+    //*******
+    
+    sqlite3_stmt *stmt, *stmt2;
+    string statement = "SELECT ID FROM '" + userType + "' WHERE ID = '" + userID + "';";
+    int rc = sqlite3_prepare_v2(DB, statement.c_str(), statement.length(), &stmt, NULL);
+    if (rc != SQLITE_OK) {
+     // handle the error
+    }
+    // Loop through the results, a row at a time.
+    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+     storedID = (char*)sqlite3_column_text(stmt, 0);
+     // etc.
+    }
+    
+    statement = "SELECT EMAIL FROM '" + userType + "' WHERE ID = '" + userID + "';";
+    rc = sqlite3_prepare_v2(DB, statement.c_str(), statement.length(), &stmt, NULL);
+    if (rc != SQLITE_OK) {
+     // handle the error
+    }
+    // Loop through the results, a row at a time.
+    while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+     storedEmail = (char*)sqlite3_column_text(stmt, 0);
+     // etc.
+    }
+    // Free the statement when done.
+    sqlite3_finalize(stmt);
+    
+    //Check if user has entered valid credentials: 
+    if ((userID == storedID) && (userEmail == storedEmail)){
+      validLogin = 1;
+      cout << "\n\n*********************";
+      cout << "\n   LOGIN ACTIVATED   ";
+      cout << "\n*********************\n\n";
+    }
+    else if (invalidCount >= 3){
+      cout << "ERROR: Too Many Invalid Attempt: Try Again Later\n";
+      break;
+    }
+    else {
+      cout << "\nERROR: INVALID LOGIN CREDENTIALS: TRY AGAIN\n"; 
+      invalidCount++;
+    }
+  }
+  
+  //Giving user options based on their userType and if their login is valid 
+  if ((type == 1) && (validLogin != 0)){
+    //Student Functions 
+    string stuFirstName, stuLastName;
+    int menuPick, cont = 1;
+    cout << "Enter your first name, last name seperated by spaces: ";
+    cin >> stuFirstName >> stuLastName;
+    student_c studentTest(stuFirstName, stuLastName, userID); //creating student object with information 
+    while (cont == 1){
+      cout << "\n********  MENU ********\n";
+      cout << "1.Add Courses to Schedule\n2.Remove Courses from Schedule\nEnter Choice: "; //menu prompt 
+      cin >> menuPick;
+      if(menuPick == 1){
+        studentTest.addToSchedule(DB, userID);
+      }
+      else if(menuPick == 2){
+        studentTest.removeFromSchedule(DB, userID);
+      }
+      else{
+        cout << "ERROR: Invalid choice\n";
+      }
+      
+      cout << "Another Menu Option? (1 - Yes, 0 - No): ";
+      cin >> cont;
+      if (cont == 0){
+        cout << "LOGOUT? (Y/N): ";
+        cin >> logout; 
+        if (logout == 'Y'){
+          //If user would like to log out, erase all their credentials 
+          userID = ""; 
+          userEmail = "";
+          storedID = ""; 
+          storedEmail = ""; 
+        }
+      }
+    }
+  }
+  
+  else if ((type == 2) && (validLogin != 0)){
+    //INSTRUCTOR MENU OPTIONS AND FUNCTIONS 
+    cout << "INSTRUCTOR FUNCTIONS...\n";
+  }
+  
+  else if ((type == 3) && (validLogin != 0)){
+    //ADMIN MENU OPTIONS AND FUNCTIONS 
+    cout << "ADMIN FUNCTIONS...\n";
+  }
+
+/*
+//admin functions
+do{
+admin_c dummy("Dummy", "Info", "Woooo"); //occupy variable with login information
+cout << "1.Search all courses\n2.Search with parameters\n3.Add/Remove course\nEnter choice:"; //prompt user with interface
+cin >> selection;  //take user input
+	if (selection == 1){
+		dummy.searchAllCourse(DB);
 	}
-
-	printf("\n");
-
-	return 0;
-}
-//header of file developed by Nuno Bazarian. Variable names can be blamed on me (Nuno)
-int main(void) {
-	sqlite3* DB;
-	int selection, rfc;
-	string input, hold;
-	char logout;
-	char* messageError;
-	rfc = sqlite3_open("assignment5.db", &DB); //open Assignment5.db (database file)
-
-
-	  //ADD Columns to Student and Instructor - Keeps track of the courses that they are taking/teaching 
-	std::string addColumnCourses = "ALTER TABLE STUDENT ADD COURSE1 INT;";
-	rfc = sqlite3_exec(DB, addColumnCourses.c_str(), callback, NULL, NULL);
-	addColumnCourses = "ALTER TABLE STUDENT ADD COURSE2 INT;";
-	rfc = sqlite3_exec(DB, addColumnCourses.c_str(), callback, NULL, NULL);
-	addColumnCourses = "ALTER TABLE STUDENT ADD COURSE3 INT;";
-	rfc = sqlite3_exec(DB, addColumnCourses.c_str(), callback, NULL, NULL);
-	addColumnCourses = "ALTER TABLE STUDENT ADD COURSE4 INT;";
-	rfc = sqlite3_exec(DB, addColumnCourses.c_str(), callback, NULL, NULL);
-	addColumnCourses = "ALTER TABLE STUDENT ADD COURSE5 INT;";
-	rfc = sqlite3_exec(DB, addColumnCourses.c_str(), callback, NULL, NULL);
-
-	addColumnCourses = "ALTER TABLE INSTRUCTOR ADD COURSE1 INT;";
-	rfc = sqlite3_exec(DB, addColumnCourses.c_str(), callback, NULL, NULL);
-	addColumnCourses = "ALTER TABLE INSTRUCTOR ADD COURSE2 INT;";
-	rfc = sqlite3_exec(DB, addColumnCourses.c_str(), callback, NULL, NULL);
-	addColumnCourses = "ALTER TABLE INSTRUCTOR ADD COURSE3 INT;";
-	rfc = sqlite3_exec(DB, addColumnCourses.c_str(), callback, NULL, NULL);
-	addColumnCourses = "ALTER TABLE INSTRUCTOR ADD COURSE4 INT;";
-	rfc = sqlite3_exec(DB, addColumnCourses.c_str(), callback, NULL, NULL);
-	addColumnCourses = "ALTER TABLE INSTRUCTOR ADD COURSE5 INT;";
-	rfc = sqlite3_exec(DB, addColumnCourses.c_str(), callback, NULL, NULL);
-
-
-
-
-
-
-
-	//CHECKING WHAT TYPE OF USER 
-	//First prompt user to Log In 
-	int studentCheck = 0, instructorCheck = 0, adminCheck = 0;
-	string idToCheck;
-	char typeOfUser; //s - student, i - instructor, a - admin
-	//Prompt user to enter their ID 
-	cout << "Enter your ID: ";
-	cin >> idToCheck;
-
-
-	string checkIfStudent = "SELECT * FROM STUDENT WHERE ID = " + idToCheck + ";";
-	studentCheck = sqlite3_exec(DB, checkIfStudent.c_str(), callback, NULL, NULL);
-	if (studentCheck == SQLITE_OK) {
-		typeOfUser = 's';
+	else if (selection == 2){
+		dummy.searchParamCourse(DB);
 	}
-
-	string checkIfInstructor = "SELECT * FROM INSTRUCTOR WHERE ID = " + idToCheck + ";";
-	instructorCheck = sqlite3_exec(DB, checkIfInstructor.c_str(), callback, NULL, NULL);
-	if (instructorCheck == SQLITE_OK) {
-		typeOfUser = 'i';
-	}
-	string checkIfAdmin = "SELECT * FROM ADMIN WHERE ID = " + idToCheck + ";";
-	adminCheck = sqlite3_exec(DB, checkIfInstructor.c_str(), callback, NULL, NULL);
-	if (adminCheck == SQLITE_OK) {
-		typeOfUser = 'a';
-	}
-
-
-	//if ((typeOfUser != 's') || (typeOfUser != 'i') || (typeOfUser != 'a'))
-	//	cout << "\nERROR: Please recheck your ID input\n";
-
-	//Using if/else to only show user options that are applicable to them 
-	if (typeOfUser == 's') {
-		//Options for Students 
-		cout << "\nSTUDENT LOGIN ACTIVATED\n";
-	}
-
-	else if (typeOfUser == 'i') {
-		//Options for Instructors 
-		cout << "\nINSTRUCTOR LOGIN ACTIVATED\n";
-	}
-
-	else if (typeOfUser == 'a') {
-		//Options for Admins 
-		cout << "\nADMIN LOGIN ACTIVATED\n";
-	}
-	else {
-		cout << "Oops! Check your ID again, there seems to be a mistake\n";
-	}
-
-
-	//admin functions (Nuno Bazarian)
-	do {
-		admin_c dummy("Dummy", "Info", "Woooo"); //occupy variable with login information
-		cout << "1.Search all courses\n2.Search with parameters\n3.Add/Remove course\nEnter choice:"; //prompt user with interface
-		cin >> selection;  //take user input
-		if (selection == 1) {
-			dummy.searchAllCourse(DB);
-		}
-		else if (selection == 2) {
-			dummy.searchParamCourse(DB);
-		}
-		else if (selection == 3) {
-			cout << "1.Add course\n2.Remove course\nEnter choice:";
-			cin >> selection;
-			if (selection == 1) {
+	else if(selection == 3){
+		cout << "1.Add course\n2.Remove course\nEnter choice:";
+		cin >> selection;
+			if (selection == 1){
 				dummy.addCourse(DB);
 			}
-			else if (selection == 2) {
+			else if (selection == 2){
 				dummy.removeCourse(DB);
 			}
 			else
 				cout << "Input not recognized\n";
-
-		}
-		cout << "Continue?(Y/N)";
-		cin >> logout;
-	} while (logout != 'N');
-
-
-	// Assemble and print course roster, Brendan Gibbons 
-
-	// Creates object for instructor
-	instructor_c instructor("Example", "Professor", 1093); // Sample values
-
-	// Creates new columns for courses for instuctors, allows for four classes
-	std::string assembleRoster = "ALTER TABLE INSTRUCTOR ADD CLASS1 INT;";
-	rfc = sqlite3_exec(DB, assembleRoster.c_str(), callback, NULL, NULL);
-
-	string assembleRoster = "ALTER TABLE INSTRUCTOR ADD CLASS2 INT;";
-	rfc = sqlite3_exec(DB, assembleRoster.c_str(), callback, NULL, NULL);
-
-	string assembleRoster = "ALTER TABLE INSTRUCTOR ADD CLASS3 INT;";
-	rfc = sqlite3_exec(DB, assembleRoster.c_str(), callback, NULL, NULL);
-
-	string assembleRoster = "ALTER TABLE INSTRUCTOR ADD CLASS4 INT;";
-	rfc = sqlite3_exec(DB, assembleRoster.c_str(), callback, NULL, NULL);
-
-	int choice = 0;
-	cout << "Select an option:\n\n1. Assemble roster\n2. Print roster\n\nSelect: ";
-	cin >> choice;
-
-	switch (choice)
-	{
-	case 1:
-		instructor.addToRoster(DB);
-		break;
-
-	case 2:
-		instructor.printRoster(DB);
-		break;
-
-	default:
-		break;
+	
 	}
+	cout << "Continue?(Y/N)";
+	cin >> logout;
+}while (logout != 'N');
 
-	// Search courses by parameters, Brendan Gibbons
-	int crnIn = 0, yearIn = 0;
-	std::string deptIn = "", instructorIn = "";
-	cout << "Enter CRN and year of course separated by a space: ";
-	cin >> crnIn >> yearIn;
-
-	string query = "SELECT * FROM COURSE WHERE YEAR = " + yearIn + "AND CRN = " + crnIn;
-
-	cout << "Which parameters do you want to search by?\n\n1. CRN\n2. Instructor\n3.Department\n\nMake a selection: ";
-	cin >> choice;
-
-	switch (choice)
-	{
-	case 1:
-		cout << "Enter the CRN of the course: ";
-		cin >> crnIn;
-
-		query = query + " AND CRN =" + crnIn;
-
-		break;
-
-	case 2:
-
-		cout << "Enter the instructor of the course: ";
-		cin >> instructorIn;
-
-		query = query + " AND INSTRUCTOR = '" + crnIn + "'";
-
-		break;
-
-	case 3:
-		cout << "Enter the department of the course: ";
-		cin >> deptIn;
-
-		query = query + " AND DEPARTMENT = '" + deptIn + "'";
-
-		break;
-
-	default:
-
-		cout << "Invalid selection.";
-
-		break;
-
-	}
-
-	rfc = sqlite3_exec(DB, query.c_str(), callback, NULL, NULL);
-
-	if (rfc != SQLITE_OK)
-	{
-		cout << "No course found with those parameters.\n";
-	}
-
-
-
-	sqlite3_close(DB);
+*/
+sqlite3_close(DB);
+return 0;
 }
+
+
+
+
+
