@@ -1,5 +1,6 @@
 #ifndef STUDENT_H
 #define STUDENT_H
+#include <vector>
 
 #include "user.h"
 using namespace std;
@@ -14,25 +15,47 @@ class student_c: public user_c{
  
  //Add or remove from course schedule 
 	void addToSchedule(sqlite3* DB, string ID) {
-		int another = 1, count = 0;
-    std::string courseToAdd[5] = {"NULL", "NULL", "NULL", "NULL", "NULL"};
-    cout << "LIST OF ALL COURSES\n\n";
-    string courseList = "SELECT CRN, TITLE FROM COURSE";
-    rfc = sqlite3_exec(DB, courseList.c_str(), callback, NULL, NULL);
-	  cout << "You may register for a maximum of 5 Courses\n\n";
-   
-    while ((count < 6) && (another == 1)){
-      cout << "Course " << count+1 << " CRN?: ";
-      cin >> courseToAdd[count];
-      cout << "\nAnother? (1 - Yes, 0 - No): ";
-      cin >> another;
-      count++;
-    }
+		int another, error, numCourses, already, count;
+		std::string courseToAdd[5] = {"NULL", "NULL", "NULL", "NULL", "NULL"};
+		//string coursesAdded[5] = { "NULL", "NULL", "NULL", "NULL", "NULL" };
+		vector<string> registeredCourses;
 
-    string addCourses = "UPDATE STUDENT SET COURSE1 = '" + courseToAdd[0] + "', COURSE2 = '" + courseToAdd[1] + "', COURSE3 = '" + courseToAdd[2] + "', COURSE4 = '" + courseToAdd[3] +                         "', COURSE5 = '" + courseToAdd[4] + "' WHERE ID = '" + ID + "'";
-		rfc = sqlite3_exec(DB, addCourses.c_str(), callback, NULL, NULL);
-    string printCourses = "SELECT * FROM STUDENT WHERE ID = '" + ID + "';";
-    rfc = sqlite3_exec(DB, printCourses.c_str(), callback, NULL, NULL);
+		//Display all available courses 
+		cout << "LIST OF ALL COURSES\n\n";
+		string courseList = "SELECT CRN, TITLE FROM COURSE";
+		rfc = sqlite3_exec(DB, courseList.c_str(), callback, NULL, NULL);
+		cout << "You may register for a maximum of 5 Courses\n\n";
+
+		cout << "\nHow many courses would you like to register for?: ";
+		cin >> numCourses; 
+
+		count = 0;
+		while (count < numCourses) {
+			do {
+				cout << "Course " << count + 1 << " CRN?: ";
+				cin >> courseToAdd[count];
+
+				for (int j = 0; j < registeredCourses.size(); j++) {
+					if (courseToAdd[count] == registeredCourses[j]) {
+						cout << "ERROR: Course already in Schedule\n";
+						courseToAdd[count] = "NULL";
+						already = 1;
+					}
+				}
+
+				if (already != 1) {
+					error = 0;
+					registeredCourses.push_back(courseToAdd[count]);
+					count++;
+				}
+				already = 0;
+			} while (error == 1);
+		}
+
+		string addCourses = "UPDATE STUDENT SET COURSE1 = '" + courseToAdd[0] + "', COURSE2 = '" + courseToAdd[1] + "', COURSE3 = '" + courseToAdd[2] + "', COURSE4 = '" + courseToAdd[3] +                         "', COURSE5 = '" + courseToAdd[4] + "' WHERE ID = '" + ID + "'";
+			rfc = sqlite3_exec(DB, addCourses.c_str(), callback, NULL, NULL);
+		string printCourses = "SELECT * FROM STUDENT WHERE ID = '" + ID + "';";
+		rfc = sqlite3_exec(DB, printCourses.c_str(), callback, NULL, NULL);
 	}
  
  
