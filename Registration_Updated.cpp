@@ -1,6 +1,7 @@
 #include <sqlite3.h>
 #include "admin.h"
 #include "student.h"
+#include "instructor.h"
 #include <vector>
 using namespace std;
 using std::vector;
@@ -142,43 +143,66 @@ int main(void){
   else if ((type == 2) && (validLogin != 0)){
     //INSTRUCTOR MENU OPTIONS AND FUNCTIONS 
     cout << "INSTRUCTOR FUNCTIONS...\n";
+
+    string instructorName, instructorSurname;
+    int selection, cont = 1;
+    cout << "Enter your first name, last name separated by spaces: ";
+    cin >> instructorName >> instructorSurname;
+    instructor_c instructorTest(instructorName, instructorSurname, userID);
+
+    
+
+    while (cont == 1)
+    {
+        cout << "\n********  INSTRUCTOR MENU ********\n1. Print course teaching schedule\n2. Print and Search course roster\n3. Exit\n\nMake a selection: ";
+        cin >> selection;
+
+        switch (selection)
+        {
+        case 1:
+
+            instructorTest.printRoster(DB, userID);
+
+            break;
+        case 2:
+
+            instructorTest.searchRoster(DB, userID);
+
+            break;
+        case 3:
+
+            cont = 0;
+            break;
+
+        default:
+
+            cout << "\n\nInvalid input. Try again.\n\n";
+
+            break;
+        }
+
+        if (cont != 1) {
+            cout << "LOGOUT? (Y/N): ";
+            cin >> logout;
+            if (logout == 'Y') {
+                //If user would like to log out, erase all their credentials 
+                userID = "";
+                userEmail = "";
+                storedID = "";
+                storedEmail = "";
+            }
+        }
+    }
+
   }
   
-  else if ((type == 3) && (validLogin != 0)){
+  else if ((type == 3) && (validLogin != 0))
+   {
     //ADMIN MENU OPTIONS AND FUNCTIONS 
     cout << "ADMIN FUNCTIONS...\n";
   }
 
-/*
-//admin functions
-do{
-admin_c dummy("Dummy", "Info", "Woooo"); //occupy variable with login information
-cout << "1.Search all courses\n2.Search with parameters\n3.Add/Remove course\nEnter choice:"; //prompt user with interface
-cin >> selection;  //take user input
-	if (selection == 1){
-		dummy.searchAllCourse(DB);
-	}
-	else if (selection == 2){
-		dummy.searchParamCourse(DB);
-	}
-	else if(selection == 3){
-		cout << "1.Add course\n2.Remove course\nEnter choice:";
-		cin >> selection;
-			if (selection == 1){
-				dummy.addCourse(DB);
-			}
-			else if (selection == 2){
-				dummy.removeCourse(DB);
-			}
-			else
-				cout << "Input not recognized\n";
-	
-	}
-	cout << "Continue?(Y/N)";
-	cin >> logout;
-}while (logout != 'N');
 
-*/
 sqlite3_close(DB);
 return 0;
 }
