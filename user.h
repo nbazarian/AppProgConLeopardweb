@@ -57,7 +57,7 @@ static int callback(void* data, int argc, char** argv, char** azColName)
 			int selection;
 			cout << "Enter the semester and year to search for the course in:";
 			cin >> strChoice1 >> strChoice2;
-			string query = "SELECT * FROM COURSE WHERE SEMESTER = '" + strChoice1 +"'AND YEAR = " + strChoice2;
+			string query = "SELECT * FROM COURSE WHERE SEM = '" + strChoice1 +"'AND YEAR = " + strChoice2;
 			cout << "1.Search by CRN\n2.Search by department\n3.Search by title\n4.Skip\nChoose additional parameter:";
 			cin >> selection;
 
@@ -68,20 +68,22 @@ static int callback(void* data, int argc, char** argv, char** azColName)
 				}
 				else if (selection == 2){
 					cout << "Enter department:";
-					getline(cin, strChoice1);
-					query = query + " AND DEPARTMENT = '" + strChoice1 + "'";
+					cin >> strChoice1;
+					query = query + " AND DEPT = '" + strChoice1 + "'";
 				}
 				else if (selection == 3){
 					cout << "Enter title:";
+					cin.ignore();
 					getline(cin, strChoice1);
 					query = query + " AND TITLE = '" + strChoice1 + "'";
+					cin.clear();
+
 				}
 
 			rfc = sqlite3_exec(DB, query.c_str(), callback, NULL, NULL);
                		if (rfc !=SQLITE_OK){
                         	cout << "No course found with those parameters.\n";
                 	}
-
 
 		}
         user_c(){
