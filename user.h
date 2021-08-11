@@ -68,12 +68,12 @@ static int callback(void* data, int argc, char** argv, char** azColName)
 				}
 				else if (selection == 2){
 					cout << "Enter department:";
-					cin >> strChoice1;
+					getline(cin, strChoice1);
 					query = query + " AND DEPARTMENT = '" + strChoice1 + "'";
 				}
 				else if (selection == 3){
 					cout << "Enter title:";
-					cin >> strChoice1;
+					getline(cin, strChoice1);
 					query = query + " AND TITLE = '" + strChoice1 + "'";
 				}
 
