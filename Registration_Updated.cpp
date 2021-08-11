@@ -104,40 +104,54 @@ int main(void){
   
   //Giving user options based on their userType and if their login is valid 
   if ((type == 1) && (validLogin != 0)){
-    //Student Functions 
-    string stuFirstName, stuLastName;
-    int menuPick, cont = 1;
-    cout << "Enter your first name, last name seperated by spaces: ";
-    cin >> stuFirstName >> stuLastName;
-    student_c studentTest(stuFirstName, stuLastName, userID); //creating student object with information 
-    while (cont == 1){
-      cout << "\n********  MENU ********\n";
-      cout << "1.Add Courses to Schedule\n2.Remove Courses from Schedule\nEnter Choice: "; //menu prompt 
-      cin >> menuPick;
-      if(menuPick == 1){
-        studentTest.addToSchedule(DB, userID);
-      }
-      else if(menuPick == 2){
-        studentTest.removeFromSchedule(DB, userID);
-      }
-      else{
-        cout << "ERROR: Invalid choice\n";
-      }
-      
-      cout << "Another Menu Option? (1 - Yes, 0 - No): ";
-      cin >> cont;
-      if (cont == 0){
-        cout << "LOGOUT? (Y/N): ";
-        cin >> logout; 
-        if (logout == 'Y'){
-          //If user would like to log out, erase all their credentials 
-          userID = ""; 
-          userEmail = "";
-          storedID = ""; 
-          storedEmail = ""; 
+        //Student Functions 
+        string stuFirstName, stuLastName;
+        int menuPick = 0;
+
+        //Create student_c studentCreated so that the functions of student.h can be accessed 
+        cout << "Enter your first name, last name seperated by spaces: ";
+        cin >> stuFirstName >> stuLastName;
+        student_c studentCreated(stuFirstName, stuLastName, userID); //creating student object with information 
+
+        //While loop to continue prompting menu and options until user decides otherwise 
+        while ((cont == 1) && (logout == 'N')) {
+            cout << "\n********  MENU ********\n";
+            cout << "1.Add Courses to Schedule\n2.Remove Courses from Schedule\n3.Print Schedule\nEnter Choice: "; //menu prompt 
+            cin >> menuPick;
+
+            //if/else for user's choice from menu 
+            if (menuPick == 1) {
+                studentCreated.addToSchedule(DB, userID);
+            }
+            else if (menuPick == 2) {
+                studentCreated.removeFromSchedule(DB, userID);
+            }
+            else if (menuPick == 3) {
+                studentCreated.printSchedule(DB, userID);
+            }
+            else {
+                cout << "ERROR: Invalid choice\n";
+            }
+
+            cout << "Another Menu Option? (1 - Yes, 0 - No): ";
+            cin >> cont;
+
+            if (cont == 0) {
+                cout << "LOGOUT? (Y/N): ";
+                cin >> logout;
+                if (logout == 'Y') {
+                    //If user would like to log out, erase all their credentials 
+                    userID = "";
+                    userEmail = "";
+                    storedID = "";
+                    storedEmail = "";
+                }
+                else {
+                    logout = 'N';
+                    cont = 1;
+                }
+            }
         }
-      }
-    }
   }
   
   else if ((type == 2) && (validLogin != 0)){
