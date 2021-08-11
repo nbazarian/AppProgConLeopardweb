@@ -64,7 +64,7 @@ static int callback(void* data, int argc, char** argv, char** azColName)
 				if (selection == 1){
 					cout << "Enter CRN:";
 					cin >> strChoice1;
-					query = query + " AND CRN =" + strChoice1;
+					query = query + " AND CRN ='" + strChoice1 + "'";
 				}
 				else if (selection == 2){
 					cout << "Enter department:";
@@ -76,7 +76,7 @@ static int callback(void* data, int argc, char** argv, char** azColName)
 					cin >> strChoice1;
 					query = query + " AND TITLE = '" + strChoice1 + "'";
 				}
-			cout << strChoice1;
+
 			rfc = sqlite3_exec(DB, query.c_str(), callback, NULL, NULL);
                		if (rfc !=SQLITE_OK){
                         	cout << "No course found with those parameters.\n";
