@@ -1,3 +1,4 @@
+
 #ifndef ADMIN_H
 #define ADMIN_H
 
@@ -43,16 +44,156 @@ class admin_c: public user_c{
                 	std::cout << "Records deleted Successfully!" << std::endl;
 
         }
-        void modUSystem(){ //add/remove user from system
-            std::cout << "User removed. \n";
+        void modUSystem(sqlite3* DB){ //add/remove user from system
+        	int manChoice, typeChoice;
+		string fame, lame, iD, dpart, yar, emil, tile;
+		std::cout << "1.Add\n2.Remove\nSelect:";
+		std::cin >>  manChoice;
+		
+		std::cout << "1.Student\n2.Instructor\nSelect:";
+		std::cin >> typeChoice;
+
+		if (manChoice == 1 && typeChoice == 1){
+			std::cout << "Please enter the first name, last name, ID, major, year of graduation and email address of the student:";
+			std::cin >> fame >> lame >> iD >> dpart >> yar >> emil;
+
+                        string userInput("INSERT INTO STUDENT VALUES('"+ iD + "','" + fame +"','" + lame +"', '" + yar +"','"+ dpart+ "','" + emil+"', NULL, NULL, NULL, NULL, NULL);");
+
+                        rfc = sqlite3_exec(DB,userInput.c_str(),callback,NULL,NULL);
+
+                        if (rfc !=SQLITE_OK)
+                        {
+                                std::cerr << "Error Insert" << std::endl;
+                        }
+                        else
+                                std::cout << "Student created Successfully!" << std::endl;
+
+
+		}
+		else if(manChoice == 1 && typeChoice == 2){
+                        std::cout << "Please enter the first name, last name, ID, title, department, year of hire and email address of the instructor:";
+                        std::cin >> fame >> lame >> iD >> tile >> dpart >> yar >> emil;
+
+                        string userInput("INSERT INTO INSTRUCTOR VALUES('"+ iD + "','" + fame +"','" + lame +"', '" + yar +"','"+ tile + "','" + dpart+ "','" + emil+"', NULL, NULL, NULL, NULL, NULL);");
+
+                        rfc = sqlite3_exec(DB,userInput.c_str(),callback,NULL,NULL);
+
+                        if (rfc !=SQLITE_OK)
+                        {
+                                std::cerr << "Error Insert" << std::endl;
+                        }
+                        else
+                                std::cout << "Instructor created Successfully!" << std::endl;
+
+
+		}
+		else if(manChoice == 2 && typeChoice ==1){
+                        std::cout << "Please enter the ID of the instructor you wish to remove:";
+                        std::cin >> iD;
+                        string userInput("DELETE from STUDENT where ID="+ iD + ";");
+
+	                rfc = sqlite3_exec(DB,userInput.c_str(),callback,NULL,NULL);
+
+	                if (rfc !=SQLITE_OK)
+        	        {
+                	        std::cerr << "Error Insert" << std::endl;
+	                }
+	                else
+        	                std::cout << "Student deleted Successfully!" << std::endl;
+
+			}
+		else if(manChoice == 2 && typeChoice == 2){
+			std::cout << "Please enter the ID of the instructor you wish to remove:";
+			std::cin >> iD;
+			string userInput("DELETE from INSTRUCTOR where ID="+ iD + ";");
+
+                        rfc = sqlite3_exec(DB,userInput.c_str(),callback,NULL,NULL);
+
+                        if (rfc !=SQLITE_OK)
+                        {
+                                std::cerr << "Error Insert" << std::endl;
+                        }
+                        else
+                                std::cout << "Instructor deleted Successfully!" << std::endl;
+		}
+		else
+			std::cout << "Inputs not recognized.\n";
         }
 
-        void modSCourse(){ //add/remove student from course
-            std::cout << "Student removed from course.\n";
-        }
 
-        void searchData(){ //function to search for data in the system and print it
-            std::cout << "Information found and displayed from system.\n";
+        void changeSched(sqlite3* DB){ //modify schedules of users
+		 string iD, courseNumber, CRN;
+		int manChoice,typeChoice;
+		std::cout << "1.Link\n2.Unlink\nSelect:";
+		std:cin >> manChoice;
+
+		std::cout << "1.Student\n2.Instructor\nSelect:";
+		std::cin >> typeChoice;
+
+		std::cout << "Please enter the ID of the user and the course to be changed:";
+		std::cin >> iD >> courseNumber;
+		if (manChoice == 1 && typeChoice == 1){
+
+			std::cout << "Please input the CRN to link:";
+			std::cin >> CRN;
+
+			string userInput("UPDATE STUDENT SET COURSE"+ courseNumber +" = " + CRN +" WHERE ID = " + iD + ";");
+
+                        rfc = sqlite3_exec(DB,userInput.c_str(),callback,NULL,NULL);
+
+                        if (rfc !=SQLITE_OK)
+                        {
+                                std::cerr << "Error Insert" << std::endl;
+                        }
+                        else
+                                std::cout << "Student linked Successfully!" << std::endl;
+		}
+		else if (manChoice == 1 && typeChoice == 2){
+                        std::cout << "Please input the CRN to link:";
+                        std::cin >> CRN;
+
+                        string userInput("UPDATE INSTRUCTOR SET COURSE"+ courseNumber +" = " + CRN +" WHERE ID = " + iD + ";");
+
+                        rfc = sqlite3_exec(DB,userInput.c_str(),callback,NULL,NULL);
+
+                        if (rfc !=SQLITE_OK)
+                        {
+                                std::cerr << "Error Insert" << std::endl;
+                        }
+                        else
+                                std::cout << "Instructor linked Successfully!" << std::endl;
+
+		}
+		else if (manChoice == 2 && typeChoice == 1){
+
+                        string userInput("UPDATE STUDENT SET COURSE"+ courseNumber +" = NULL  WHERE ID = " + iD + ";");
+
+                        rfc = sqlite3_exec(DB,userInput.c_str(),callback,NULL,NULL);
+
+                        if (rfc !=SQLITE_OK)
+                        {
+                                std::cerr << "Error Insert" << std::endl;
+                        }
+                        else
+                                std::cout << "Student unlinked successfully\n";
+
+		}
+		else if(manChoice == 2 && typeChoice == 2){
+
+                        string userInput("UPDATE INSTRUCTOR SET COURSE"+ courseNumber +" = NULL  WHERE ID = " + iD + ";");
+
+                        rfc = sqlite3_exec(DB,userInput.c_str(),callback,NULL,NULL);
+
+                        if (rfc !=SQLITE_OK)
+                        {
+                                std::cerr << "Error Insert" << std::endl;
+                        }
+                        else
+                                std::cout << "Instructor unlinked successfully\n";
+
+		}
+		else 
+			cout << "Input not recognized\n";
         }
   
         admin_c(std::string fName, std::string lName, std::string inD):user_c(fName, lName, inD){}
