@@ -15,19 +15,26 @@ class student_c: public user_c{
  
  //Add or remove from course schedule 
 	void addToSchedule(sqlite3* DB, string ID) {
-		int another, error, numCourses, already, count;
+		int another, error, numCourses = -1, already, count;
 		std::string courseToAdd[5] = {"NULL", "NULL", "NULL", "NULL", "NULL"};
-		//string coursesAdded[5] = { "NULL", "NULL", "NULL", "NULL", "NULL" };
 		vector<string> registeredCourses;
 
 		//Display all available courses 
 		cout << "LIST OF ALL COURSES\n\n";
 		string courseList = "SELECT CRN, TITLE FROM COURSE";
 		rfc = sqlite3_exec(DB, courseList.c_str(), callback, NULL, NULL);
-		cout << "You may register for a maximum of 5 Courses\n\n";
+		cout << "You may register for a maximum of 5 Courses\n";
 
-		cout << "\nHow many courses would you like to register for?: ";
-		cin >> numCourses; 
+		while (numCourses > 6 || numCourses < 0) {
+			cout << "\nHow many courses would you like to register for?: ";
+			cin >> numCourses;
+			if (numCourses > 6) {
+				cout << "ERROR: You can only take upto 5 classes a semester. Please try again.\n";
+			}
+			else if (numCourses < 0) {
+				cout << "ERROR: You cannot add less than 0 courses. Please try again.\n";
+			}
+		}
 
 		count = 0;
 		while (count < numCourses) {
@@ -52,8 +59,12 @@ class student_c: public user_c{
 			} while (error == 1);
 		}
 
+		//Update database to add courses 
 		string addCourses = "UPDATE STUDENT SET COURSE1 = '" + courseToAdd[0] + "', COURSE2 = '" + courseToAdd[1] + "', COURSE3 = '" + courseToAdd[2] + "', COURSE4 = '" + courseToAdd[3] +                         "', COURSE5 = '" + courseToAdd[4] + "' WHERE ID = '" + ID + "'";
-			rfc = sqlite3_exec(DB, addCourses.c_str(), callback, NULL, NULL);
+		rfc = sqlite3_exec(DB, addCourses.c_str(), callback, NULL, NULL);
+		
+		//Print Student's schedule
+		cout << "\n**********\n SCHEDULE\n**********\n";
 		string printCourses = "SELECT * FROM STUDENT WHERE ID = '" + ID + "';";
 		rfc = sqlite3_exec(DB, printCourses.c_str(), callback, NULL, NULL);
 	}
@@ -63,13 +74,17 @@ class student_c: public user_c{
 	void removeFromSchedule(sqlite3* DB, string ID) {
 		int courseToRemove, another = 1;
 		string removeCourse;
-    string emptyString = "NULL";
+		string emptyString = "NULL";
+
+		//Continue looping until user no longer wants to remove another course 
 		while (another == 1) {
-      string printCourses = "SELECT NAME, COURSE1, COURSE2, COURSE3, COURSE4, COURSE5 FROM STUDENT WHERE ID = '" + ID + "';";
-      rfc = sqlite3_exec(DB, printCourses.c_str(), callback, NULL, NULL);
+			string printCourses = "SELECT NAME, COURSE1, COURSE2, COURSE3, COURSE4, COURSE5 FROM STUDENT WHERE ID = '" + ID + "';";
+			rfc = sqlite3_exec(DB, printCourses.c_str(), callback, NULL, NULL);
 			
-      cout << "Which course would you like to remove?(1,2,3,4,5): ";
+			cout << "Which course would you like to remove?(1,2,3,4,5): ";
 			cin >> courseToRemove;
+
+			//Update database to remove desired course(s)
 			switch (courseToRemove) {
 				case 1:
 					removeCourse = "UPDATE STUDENT SET COURSE1 = NULL WHERE ID = '" + ID + "'";
@@ -91,15 +106,28 @@ class student_c: public user_c{
 					removeCourse = "UPDATE STUDENT SET COURSE5 = NULL WHERE ID = '" + ID + "'";
 					rfc = sqlite3_exec(DB, removeCourse.c_str(), callback, NULL, NULL);
 				break;
+				default: 
+					"ERROR: Invalid\n";
+				break;
+
 			}
 
-			cout << "\n\nAnother? (1 - Yes, 0 - No): ";
+			cout << "\n\nRemove another Course? (1 - Yes, 0 - No): ";
 			cin >> another;
 		} 
-    string printCourses = "SELECT NAME, COURSE1, COURSE2, COURSE3, COURSE4, COURSE5 FROM STUDENT WHERE ID = '" + ID + "';";
-    rfc = sqlite3_exec(DB, printCourses.c_str(), callback, NULL, NULL);
+
+		//Print out updated student schedule 
+		cout << "\n**********\n SCHEDULE\n**********\n";
+		string printCourses = "SELECT NAME, COURSE1, COURSE2, COURSE3, COURSE4, COURSE5 FROM STUDENT WHERE ID = '" + ID + "';";
+		rfc = sqlite3_exec(DB, printCourses.c_str(), callback, NULL, NULL);
 	}
 
+
+	void printSchedule(sqlite3* DB, string ID) {
+		cout << "\n\n**********\n SCHEDULE\n**********\n";
+		string printCourses = "SELECT NAME, COURSE1, COURSE2, COURSE3, COURSE4, COURSE5 FROM STUDENT WHERE ID = '" + ID + "';";
+		int rfc = sqlite3_exec(DB, printCourses.c_str(), callback, NULL, NULL);
+	}
 };
 
 #endif
